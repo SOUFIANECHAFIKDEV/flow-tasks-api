@@ -25,7 +25,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskValidator>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// CORS (Angular par défaut en 4200)
+// CORS
 builder.Services.AddCors(o =>
 {
     o.AddPolicy("allow-spa", p =>

@@ -2,7 +2,7 @@
 {
     public sealed class UpdateTaskStatusRequest
     {
-        public TaskStatus Status { get; set; }
+        public Domain.TaskStatus Status { get; set; }
         public string RowVersion { get; set; } = default!;
     }
 }
