@@ -1,0 +1,6 @@
+@Flow.Tasks.Api_HostAddress = http://localhost:5250
+
+GET {{Flow.Tasks.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
