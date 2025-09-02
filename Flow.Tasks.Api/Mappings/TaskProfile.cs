@@ -10,7 +10,7 @@ namespace Flow.Tasks.Api.Mappings
         {
             CreateMap<CreateTaskRequest, TaskEntity>()
                 .ForMember(dest => dest.Status,
-                    opt => opt.MapFrom(src => src.Status ?? TaskStatus.Todo));
+                    opt => opt.MapFrom(src => src.Status ?? Domain.TaskStatus.Todo));
 
             CreateMap<TaskEntity, TaskResponse>()
                 .ForMember(dest => dest.RowVersion,
