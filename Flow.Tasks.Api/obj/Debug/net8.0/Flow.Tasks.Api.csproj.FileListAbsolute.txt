@@ -1,0 +1,7 @@
+C:\Users\UTILISATEUR\Own Coding\flow-tasks-app\Flow.Tasks.Api\obj\Debug\net8.0\Flow.Tasks.Api.csproj.AssemblyReference.cache
+C:\Users\UTILISATEUR\Own Coding\flow-tasks-app\Flow.Tasks.Api\obj\Debug\net8.0\Flow.Tasks.Api.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\UTILISATEUR\Own Coding\flow-tasks-app\Flow.Tasks.Api\obj\Debug\net8.0\Flow.Tasks.Api.AssemblyInfoInputs.cache
+C:\Users\UTILISATEUR\Own Coding\flow-tasks-app\Flow.Tasks.Api\obj\Debug\net8.0\Flow.Tasks.Api.AssemblyInfo.cs
+C:\Users\UTILISATEUR\Own Coding\flow-tasks-app\Flow.Tasks.Api\obj\Debug\net8.0\Flow.Tasks.Api.csproj.CoreCompileInputs.cache
+C:\Users\UTILISATEUR\Own Coding\flow-tasks-app\Flow.Tasks.Api\obj\Debug\net8.0\Flow.Tasks.Api.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\UTILISATEUR\Own Coding\flow-tasks-app\Flow.Tasks.Api\obj\Debug\net8.0\Flow.Tasks.Api.MvcApplicationPartsAssemblyInfo.cache

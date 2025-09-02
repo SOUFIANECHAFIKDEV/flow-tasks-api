@@ -1,27 +1,33 @@
-﻿using Flow.Tasks.Api.App.Domain;
+﻿using Flow.Tasks.Api.Domain;
 using Microsoft.EntityFrameworkCore;
-using TaskStatus = Flow.Tasks.Api.App.Domain.TaskStatus;
 
-namespace Flow.Tasks.Api.Data
+namespace Flow.Tasks.Api.Data;
+
+public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+    public DbSet<TaskEntity> Tasks => Set<TaskEntity>();
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        public DbSet<TaskItem> Tasks => Set<TaskItem>();
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        foreach (var entry in ChangeTracker.Entries<TaskEntity>())
         {
-            modelBuilder.Entity<TaskItem>(b =>
+            if (entry.State == EntityState.Modified)
             {
-                b.HasKey(x => x.Id);
-                b.Property(x => x.Title).IsRequired().HasMaxLength(120);
-                b.Property(x => x.Status).HasConversion<int>();
-                b.Property(x => x.RowVersion).IsRowVersion(); // important pour SQL Server
-
-                // Seed minimal (optionnel)
-                var t1 = new TaskItem { Id = Guid.NewGuid(), Title = "Évaluer patient A", Status = TaskStatus.Todo };
-                var t2 = new TaskItem { Id = Guid.NewGuid(), Title = "Rédiger compte rendu", Status = TaskStatus.InProgress };
-                b.HasData(t1, t2);
-            });
+                entry.Entity.UpdatedAtUtc = DateTime.UtcNow;
+            }
         }
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<TaskEntity>(b =>
+        {
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Title).IsRequired().HasMaxLength(120);
+            b.Property(x => x.Status).HasConversion<int>();
+            b.Property(x => x.RowVersion).IsRowVersion();
+            b.Property(x => x.IsDeleted).HasDefaultValue(false);
+        });
     }
 }

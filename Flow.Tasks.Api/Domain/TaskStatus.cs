@@ -1,4 +1,4 @@
-﻿namespace Flow.Tasks.Api.App.Domain
+﻿namespace Flow.Tasks.Api.Domain
 {
     public enum TaskStatus
     {
