@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Flow.Tasks.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e5fc9251f14210cdfbaed5829c3838d76e60dac3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0bca0c69527ccf6c997e0ed44dc73bdb1030a185")]
 [assembly: System.Reflection.AssemblyProductAttribute("Flow.Tasks.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Flow.Tasks.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
