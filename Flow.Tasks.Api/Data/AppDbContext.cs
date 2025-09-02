@@ -26,8 +26,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             b.HasKey(x => x.Id);
             b.Property(x => x.Title).IsRequired().HasMaxLength(120);
             b.Property(x => x.Status).HasConversion<int>();
-            b.Property(x => x.RowVersion).IsRowVersion();
             b.Property(x => x.IsDeleted).HasDefaultValue(false);
+            b.Property(e => e.RowVersion)
+            .IsRowVersion()
+            .IsConcurrencyToken()
+            .ValueGeneratedOnAddOrUpdate();
         });
     }
 }

@@ -5,8 +5,7 @@ namespace Flow.Tasks.Api.Domain
 {
     public sealed class TaskEntity : BaseEntity
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-
+        public int Id { get; set; }
         [MaxLength(120)]
         public string Title { get; set; } = default!;
         public string? Description { get; set; }

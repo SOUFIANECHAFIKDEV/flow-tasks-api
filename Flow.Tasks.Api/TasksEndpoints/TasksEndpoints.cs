@@ -23,11 +23,11 @@ public static class TasksEndpoints
         .Produces<TaskResponse>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
-        // GET /tasks (ignore soft-deleted)
+        // GET /tasks
         group.MapGet("/", async (AppDbContext db, IMapper mapper) =>
         {
             var list = await db.Tasks
-                .Where(t => !t.IsDeleted)
+                .Where(t => !t.IsDeleted) // (ignore soft-deleted)
                 .OrderByDescending(t => t.CreatedAtUtc)
                 .ToListAsync();
 
@@ -35,13 +35,13 @@ public static class TasksEndpoints
         })
         .Produces<List<TaskResponse>>();
 
-        // PATCH /tasks/{id} (update status + optimistic concurrency)
-        group.MapPatch("/{id:guid}", async (Guid id, UpdateTaskStatusRequest req, AppDbContext db, IMapper mapper) =>
+        // PATCH /tasks/{id} = update status
+        group.MapPatch("/{id:int}", async (int id, UpdateTaskStatusRequest req, AppDbContext db, IMapper mapper) =>
         {
             var entity = await db.Tasks.FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
             if (entity is null) return Results.NotFound();
 
-            var incoming = Convert.FromBase64String(req.RowVersion);
+            var incoming = ParseRowVersion(req.RowVersion);
             if (!entity.RowVersion.SequenceEqual(incoming))
                 return Results.Conflict(new { message = "RowVersion conflict. Reload and retry." });
 
@@ -53,8 +53,8 @@ public static class TasksEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict);
 
-        // (Bonus) DELETE soft: /tasks/{id}
-        group.MapDelete("/{id:guid}", async (Guid id, AppDbContext db) =>
+        //DELETE soft: /tasks/{id}
+        group.MapDelete("/{id:int}", async (int id, AppDbContext db) =>
         {
             var entity = await db.Tasks.FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
             if (entity is null) return Results.NotFound();
@@ -67,5 +67,16 @@ public static class TasksEndpoints
         .Produces(StatusCodes.Status404NotFound);
 
         return app;
+    }
+
+    static byte[] ParseRowVersion(string s)
+    {
+        if (string.IsNullOrWhiteSpace(s))
+            throw new ArgumentException("RowVersion manquante.");
+
+        if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            return Convert.FromHexString(s.AsSpan(2)); // .NET 5+
+
+        return Convert.FromBase64String(s);
     }
 }

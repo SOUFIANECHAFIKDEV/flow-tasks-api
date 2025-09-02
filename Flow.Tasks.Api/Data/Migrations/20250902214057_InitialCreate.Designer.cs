@@ -9,10 +9,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Flow.Tasks.Api.Migrations
+namespace Flow.Tasks.Api.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250902205231_InitialCreate")]
+    [Migration("20250902214057_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -27,9 +27,11 @@ namespace Flow.Tasks.Api.Migrations
 
             modelBuilder.Entity("Flow.Tasks.Api.Domain.TaskEntity", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AssignedTo")
                         .HasColumnType("nvarchar(max)");
