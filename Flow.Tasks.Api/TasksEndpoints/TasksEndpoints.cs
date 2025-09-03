@@ -1,8 +1,9 @@
-﻿using AutoMapper;
-using Flow.Tasks.Api.Data;
-using Flow.Tasks.Api.Domain;
+﻿using System.Collections.Generic;
+using Flow.Tasks.Application;
+using Flow.Tasks.Application.Tasks;
 using Flow.Tasks.Api.DTOs;
-using Microsoft.EntityFrameworkCore;
+using Flow.Tasks.Api.Mappers;
+using Flow.Tasks.Api.Validation;
 
 namespace Flow.Tasks.Api.Endpoints;
 
@@ -10,73 +11,71 @@ public static class TasksEndpoints
 {
     public static IEndpointRouteBuilder MapTasks(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/tasks").WithTags("Tasks");
+        var g = app.MapGroup("/tasks");
 
-        // POST /tasks
-        group.MapPost("/", async (CreateTaskRequest req, AppDbContext db, IMapper mapper) =>
+        g.MapGet("/", async (
+                ITaskService svc,
+                CancellationToken ct,
+                int page = 1,
+                int pageSize = 10,
+                string? sortBy = null,
+                bool desc = true,
+                string? search = null,
+                string? assignedTo = null,
+                int? status = null) =>
         {
-            var entity = mapper.Map<TaskEntity>(req);
-            db.Tasks.Add(entity);
-            await db.SaveChangesAsync();
-            return Results.Created($"/tasks/{entity.Id}", mapper.Map<TaskResponse>(entity));
-        })
-        .Produces<TaskResponse>(StatusCodes.Status201Created)
-        .Produces(StatusCodes.Status400BadRequest);
+            page = page <= 0 ? 1 : page;
+            pageSize = pageSize <= 0 || pageSize > 200 ? 20 : pageSize;
 
-        // GET /tasks
-        group.MapGet("/", async (AppDbContext db, IMapper mapper) =>
+            var (items, total) = await svc.ListAsync(
+                new TaskListQuery(page, pageSize, sortBy, desc, search, assignedTo, status), ct);
+
+            var totalPages = (int)Math.Ceiling((double)total / pageSize);
+
+            return Results.Ok(new
+            {
+                total,
+                page,
+                pageSize,
+                totalPages,
+                hasNext = page < totalPages,
+                hasPrevious = page > 1,
+                items = items.Select(i => i.ToResponse())
+            });
+        });
+
+
+        // GET by id
+        g.MapGet("/{id:int}", async (int id, ITaskService svc, CancellationToken ct) =>
         {
-            var list = await db.Tasks
-                .Where(t => !t.IsDeleted) // (ignore soft-deleted)
-                .OrderByDescending(t => t.CreatedAtUtc)
-                .ToListAsync();
+            var e = await svc.GetAsync(id, ct);
+            return e is null ? Results.NotFound() : Results.Ok(e.ToResponse());
+        });
 
-            return Results.Ok(mapper.Map<List<TaskResponse>>(list));
-        })
-        .Produces<List<TaskResponse>>();
-
-        // PATCH /tasks/{id} = update status
-        group.MapPatch("/{id:int}", async (int id, UpdateTaskStatusRequest req, AppDbContext db, IMapper mapper) =>
+        // POST create
+        g.MapPost("/", async (CreateTaskRequest req, ITaskService svc, CancellationToken ct) =>
         {
-            var entity = await db.Tasks.FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
-            if (entity is null) return Results.NotFound();
-
-            var incoming = ParseRowVersion(req.RowVersion);
-            if (!entity.RowVersion.SequenceEqual(incoming))
-                return Results.Conflict(new { message = "RowVersion conflict. Reload and retry." });
-
-            entity.Status = req.Status;
-            await db.SaveChangesAsync();
-            return Results.Ok(mapper.Map<TaskResponse>(entity));
+            var e = await svc.CreateAsync(req.Title, req.Description, req.AssignedTo, req.Status, ct);
+            return Results.Created($"/tasks/{e.Id}", e.ToResponse());
         })
-        .Produces<TaskResponse>()
-        .Produces(StatusCodes.Status404NotFound)
-        .Produces(StatusCodes.Status409Conflict);
+        .AddEndpointFilter<ValidationFilter<CreateTaskRequest>>();
 
-        //DELETE soft: /tasks/{id}
-        group.MapDelete("/{id:int}", async (int id, AppDbContext db) =>
+        // PATCH status (optimistic concurrency)
+        g.MapPatch("/{id:int}", async (int id, UpdateTaskStatusRequest req, ITaskService svc, CancellationToken ct) =>
         {
-            var entity = await db.Tasks.FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
-            if (entity is null) return Results.NotFound();
-
-            entity.IsDeleted = true;
-            await db.SaveChangesAsync();
-            return Results.NoContent();
+            var (updated, conflict) = await svc.UpdateStatusAsync(id, req.Status, req.RowVersion, ct);
+            if (conflict) return Results.Conflict(new { message = "RowVersion conflict. Reload and retry." });
+            return updated is null ? Results.NotFound() : Results.Ok(updated.ToResponse());
         })
-        .Produces(StatusCodes.Status204NoContent)
-        .Produces(StatusCodes.Status404NotFound);
+        .AddEndpointFilter<ValidationFilter<UpdateTaskStatusRequest>>();
+
+        // DELETE soft
+        g.MapDelete("/{id:int}", async (int id, ITaskService svc, CancellationToken ct) =>
+        {
+            var ok = await svc.DeleteAsync(id, ct);
+            return ok ? Results.NoContent() : Results.NotFound();
+        });
 
         return app;
-    }
-
-    static byte[] ParseRowVersion(string s)
-    {
-        if (string.IsNullOrWhiteSpace(s))
-            throw new ArgumentException("RowVersion manquante.");
-
-        if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-            return Convert.FromHexString(s.AsSpan(2)); // .NET 5+
-
-        return Convert.FromBase64String(s);
     }
 }

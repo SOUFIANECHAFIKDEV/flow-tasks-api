@@ -1,53 +1,45 @@
-using Flow.Tasks.Api.Data;
 using Flow.Tasks.Api.Endpoints;
-using Flow.Tasks.Api.Validation;
-using FluentValidation;
-using FluentValidation.AspNetCore;
+using Flow.Tasks.Application.Abstractions;
+using Flow.Tasks.Application.Tasks;
+using Flow.Tasks.Infrastructure.Data;
+using Flow.Tasks.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// EF Core SQL Server
-builder.Services.AddDbContext<AppDbContext>(opt =>
+const string DevCors = "DevCors";
+builder.Services.AddCors(opt =>
 {
-    var cs = builder.Configuration.GetConnectionString("SqlServer");
-    opt.UseSqlServer(cs);
+    opt.AddPolicy(DevCors, p =>
+        p.WithOrigins(
+             "http://localhost:4200",   // Angular dev
+             "https://localhost:4200")
+         .AllowAnyHeader()              // Content-Type, Authorization, etc.
+         .AllowAnyMethod()              // GET, POST, PATCH, DELETE...
+         .AllowCredentials()            // si tu utilises des cookies / auth
+         .WithExposedHeaders("ETag"));  // si tu renvoies des ETag (optionnel)
 });
 
-// AutoMapper
-builder.Services.AddAutoMapper(typeof(Program));
-
-// FluentValidation
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskValidator>();
-
-// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// CORS
-builder.Services.AddCors(o =>
-{
-    o.AddPolicy("allow-spa", p =>
-        p.WithOrigins("http://localhost:4200")
-         .AllowAnyHeader()
-         .AllowAnyMethod());
-});
+builder.Services.AddDbContext<AppDbContext>(opt =>
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer")));
+
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<ITaskService, TaskService>();
 
 var app = builder.Build();
 
-// Migrations automatiques au démarrage
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
+app.UseHttpsRedirection();
+
+app.UseCors(DevCors);
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseCors("allow-spa");
-
 app.MapTasks();
 
 app.Run();
+
+public partial class Program { } // pour tests e2e si besoin

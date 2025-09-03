@@ -1,4 +1,4 @@
-﻿namespace Flow.Tasks.Api.Domain
+﻿namespace Flow.Tasks.Domain.Entities
 {
     public class BaseEntity
     {
