@@ -1,54 +1,84 @@
-# Flow Tasks API
+# ⚙️ Flow Tasks API (Backend)
 
-Backend for the Flow Tasks App — a collaborative to-do list demo project built with **ASP.NET Core 8** and **Entity Framework Core**.
+Backend de l’application **Flow Tasks** — une API REST construite avec **.NET 8** et **Entity Framework Core**, suivant une architecture **Domain / Application / Infrastructure / API**.
 
-## 🚀 Features
-- Minimal APIs (clean and simple endpoint definitions)
-- Entity Framework Core with SQL Server
-- Database migrations and seeding
-- CRUD operations for tasks
-- Task assignment to users
-- Pagination, sorting, and filtering
-- Optimistic concurrency (row versioning)
-- Soft delete functionality
-- Swagger UI for API documentation
+---
 
-## 🛠️ Tech Stack
-- **Framework**: ASP.NET Core 8
-- **Database**: SQL Server
-- **ORM**: Entity Framework Core
-- **Validation**: FluentValidation
-- **Mapping**: AutoMapper
+## 🚀 Fonctionnalités
+- ✅ CRUD complet sur les tâches (*ajout, liste, mise à jour, suppression logique*)  
+- ✅ Pagination, tri et recherche avancée  
+- ✅ Mise à jour du statut avec gestion de la concurrence optimiste (RowVersion)  
+- ✅ Suppression douce (soft delete)  
+- ✅ Gestion des utilisateurs pour assigner les tâches  
+- ✅ Support **CORS** pour le frontend Angular  
+- ✅ Migrations Entity Framework Core  
 
-## 📂 Project Structure
-- `Flow.Tasks.Api` – API entry point (endpoints, DI configuration, Swagger)
-- `Flow.Tasks.Domain` – Entities & enums
-- `Flow.Tasks.Infrastructure` – DbContext, repositories, migrations
-- `Flow.Tasks.Application` – Abstractions and service layer
+---
 
-## ▶️ Run the API locally
-1. Ensure **SQL Server** is running (or update connection string in `appsettings.json`).
-2. Apply migrations (automatic or via CLI):
-   ```bash
-   dotnet ef database update --project Flow.Tasks.Infrastructure --startup-project Flow.Tasks.Api
-Run the API:
+## 🛠️ Stack Technique
+- **Framework** : .NET 8 Web API  
+- **ORM** : Entity Framework Core  
+- **Base de données** : SQL Server (par défaut, peut être adapté)  
+- **Architecture** :
+  - `Domain` → Entités + enums  
+  - `Application` → Services métier  
+  - `Infrastructure` → EF Core + Repository  
+  - `API` → Endpoints minimal API  
 
-bash
-Copier le code
+---
+
+## ▶️ Lancer l’API en local
+
+### Prérequis
+- [.NET 8 SDK](https://dotnet.microsoft.com/download)  
+- [SQL Server](https://www.microsoft.com/sql-server/) ou [SQL Server LocalDB]  
+
+### Étapes
+# Aller dans le projet API
 cd Flow.Tasks.Api
+
+# Appliquer les migrations (crée la base si elle n’existe pas)
+dotnet ef database update
+
+# Lancer l’API
 dotnet run
-Open Swagger at https://localhost:7121/swagger.
+➡️ L’API est disponible sur : https://localhost:7121
+➡️ Swagger UI : https://localhost:7121/swagger
 
-📌 Example Endpoints
-GET /tasks?page=1&pageSize=5&sortBy=title&desc=true&search=keyword
+### 📂 Principaux Endpoints
+Tâches (/tasks)
+GET /tasks → Liste paginée avec paramètres :
+page, pageSize, sortBy, desc, search, assignedTo, status
 
-POST /tasks → create a new task
+POST /tasks → Créer une nouvelle tâche
 
-PATCH /tasks/{id}/status → update status
+PATCH /tasks/{id}/status → Mettre à jour le statut d’une tâche
 
-DELETE /tasks/{id} → soft delete
+DELETE /tasks/{id} → Suppression logique
 
-GET /users → list users
+Utilisateurs (/users)
+GET /users → Récupérer la liste des utilisateurs disponibles pour l’assignation
 
-yaml
+### 📦 Migrations automatiques (optionnel)
+L’API peut appliquer automatiquement les migrations au démarrage :
+
+csharp
 Copier le code
+using Microsoft.EntityFrameworkCore;
+
+public static class WebApplicationExtensions
+{
+    public static void ApplyMigrations(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();
+    }
+}
+Dans Program.cs :
+
+csharp
+Copier le code
+app.ApplyMigrations();
+🔗 Dépôts associés
+Frontend Angular – flow-tasks-web https://github.com/SOUFIANECHAFIKDEV/flow-tasks-web/
