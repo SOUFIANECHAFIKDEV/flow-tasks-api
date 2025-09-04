@@ -2,6 +2,8 @@
 
 Backend de l’application **Flow Tasks** — une API REST construite avec **.NET 8** et **Entity Framework Core**, suivant une architecture **Domain / Application / Infrastructure / API**.
 
+![App Screenshot](assets/screenshot.png)
+
 ---
 
 ## 🚀 Fonctionnalités
