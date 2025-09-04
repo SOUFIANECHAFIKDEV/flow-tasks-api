@@ -37,16 +37,16 @@ Backend de l’application **Flow Tasks** — une API REST construite avec **.NE
 # Aller dans le projet API
 cd Flow.Tasks.Api
 
-# Appliquer les migrations (crée la base si elle n’existe pas)
-dotnet ef database update
+### 📦 Migrations automatiques (crée la base si elle n’existe pas)
+L’API peut appliquer automatiquement les migrations au démarrage
 
-# Lancer l’API
+### Lancer l’API
 dotnet run
 ➡️ L’API est disponible sur : https://localhost:7121
 ➡️ Swagger UI : https://localhost:7121/swagger
 
 ### 📂 Principaux Endpoints
-Tâches (/tasks)
+- Tâches (/tasks)
 GET /tasks → Liste paginée avec paramètres :
 page, pageSize, sortBy, desc, search, assignedTo, status
 
@@ -56,29 +56,8 @@ PATCH /tasks/{id}/status → Mettre à jour le statut d’une tâche
 
 DELETE /tasks/{id} → Suppression logique
 
-Utilisateurs (/users)
+- Utilisateurs (/users)
 GET /users → Récupérer la liste des utilisateurs disponibles pour l’assignation
 
-### 📦 Migrations automatiques (optionnel)
-L’API peut appliquer automatiquement les migrations au démarrage :
-
-csharp
-Copier le code
-using Microsoft.EntityFrameworkCore;
-
-public static class WebApplicationExtensions
-{
-    public static void ApplyMigrations(this WebApplication app)
-    {
-        using var scope = app.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        db.Database.Migrate();
-    }
-}
-Dans Program.cs :
-
-csharp
-Copier le code
-app.ApplyMigrations();
-🔗 Dépôts associés
+### 🔗 Dépôts associés
 Frontend Angular – flow-tasks-web https://github.com/SOUFIANECHAFIKDEV/flow-tasks-web/
