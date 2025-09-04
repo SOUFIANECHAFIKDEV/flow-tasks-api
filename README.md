@@ -47,17 +47,17 @@ dotnet run
 
 ### 📂 Principaux Endpoints
 - Tâches (/tasks)
-GET /tasks → Liste paginée avec paramètres :
-page, pageSize, sortBy, desc, search, assignedTo, status
+- GET /tasks → Liste paginée avec paramètres :
+- page, pageSize, sortBy, desc, search, assignedTo, status
 
-POST /tasks → Créer une nouvelle tâche
+- POST /tasks → Créer une nouvelle tâche
 
-PATCH /tasks/{id}/status → Mettre à jour le statut d’une tâche
+- PATCH /tasks/{id}/status → Mettre à jour le statut d’une tâche
 
-DELETE /tasks/{id} → Suppression logique
+- DELETE /tasks/{id} → Suppression logique
 
 - Utilisateurs (/users)
-GET /users → Récupérer la liste des utilisateurs disponibles pour l’assignation
+- GET /users → Récupérer la liste des utilisateurs disponibles pour l’assignation
 
 ### 🔗 Dépôts associés
 Frontend Angular – flow-tasks-web https://github.com/SOUFIANECHAFIKDEV/flow-tasks-web/
