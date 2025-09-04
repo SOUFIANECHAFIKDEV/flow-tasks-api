@@ -1,6 +1,7 @@
 using Flow.Tasks.Api.Endpoints;
 using Flow.Tasks.Application.Abstractions;
 using Flow.Tasks.Application.Tasks;
+using Flow.Tasks.Application.Users;
 using Flow.Tasks.Infrastructure.Data;
 using Flow.Tasks.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +30,13 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+
 var app = builder.Build();
+
+// Apply pending migrations on startup (with retries)
+await app.ApplyMigrationsAsync(seed: true);
 
 app.UseHttpsRedirection();
 
@@ -38,7 +45,10 @@ app.UseCors(DevCors);
 app.UseSwagger();
 app.UseSwaggerUI();
 
+//Endpoints
 app.MapTasks();
+app.MapUsers();
+
 
 app.Run();
 

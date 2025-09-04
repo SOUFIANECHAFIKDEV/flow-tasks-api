@@ -4,15 +4,16 @@ public sealed record TaskResponse(
     int Id,
     string Title,
     string? Description,
-    string? AssignedTo,
+    int? AssignedUserId,
     DateTime? createdAtUtc,
     int Status,
-    string RowVersion);
+    string RowVersion,
+    UserResponse? User);
 
 public sealed record CreateTaskRequest(
     string Title,
     string? Description,
-    string? AssignedTo,
+    int? AssignedUserId,
     int Status);
 
 public sealed record UpdateTaskStatusRequest(

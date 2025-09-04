@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using Flow.Tasks.Application;
-using Flow.Tasks.Application.Tasks;
-using Flow.Tasks.Api.DTOs;
+﻿using Flow.Tasks.Api.DTOs;
 using Flow.Tasks.Api.Mappers;
 using Flow.Tasks.Api.Validation;
+using Flow.Tasks.Application;
+using Flow.Tasks.Application.Tasks;
 
 namespace Flow.Tasks.Api.Endpoints;
 
@@ -21,14 +20,14 @@ public static class TasksEndpoints
                 string? sortBy = null,
                 bool desc = true,
                 string? search = null,
-                string? assignedTo = null,
+                int? AssignedUserId = null,
                 int? status = null) =>
         {
             page = page <= 0 ? 1 : page;
             pageSize = pageSize <= 0 || pageSize > 200 ? 20 : pageSize;
 
             var (items, total) = await svc.ListAsync(
-                new TaskListQuery(page, pageSize, sortBy, desc, search, assignedTo, status), ct);
+                new TaskListQuery(page, pageSize, sortBy, desc, search, AssignedUserId, status), ct);
 
             var totalPages = (int)Math.Ceiling((double)total / pageSize);
 
@@ -55,7 +54,7 @@ public static class TasksEndpoints
         // POST create
         g.MapPost("/", async (CreateTaskRequest req, ITaskService svc, CancellationToken ct) =>
         {
-            var e = await svc.CreateAsync(req.Title, req.Description, req.AssignedTo, req.Status, ct);
+            var e = await svc.CreateAsync(req.Title, req.Description, req.AssignedUserId, req.Status, ct);
             return Results.Created($"/tasks/{e.Id}", e.ToResponse());
         })
         .AddEndpointFilter<ValidationFilter<CreateTaskRequest>>();

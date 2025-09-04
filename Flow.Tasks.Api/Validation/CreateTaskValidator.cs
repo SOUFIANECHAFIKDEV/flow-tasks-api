@@ -9,6 +9,6 @@ public class CreateTaskValidator : AbstractValidator<CreateTaskRequest>
     {
         RuleFor(x => x.Title).NotEmpty().MaximumLength(256);
         RuleFor(x => x.Description).MaximumLength(4000).When(x => x.Description != null);
-        RuleFor(x => x.AssignedTo).MaximumLength(256).When(x => !string.IsNullOrWhiteSpace(x.AssignedTo));
+        //RuleFor(x => x.AssignedUserId).NotNull().When(x => x.AssignedUserId != null);
     }
 }

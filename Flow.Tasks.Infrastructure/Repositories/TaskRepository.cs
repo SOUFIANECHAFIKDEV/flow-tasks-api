@@ -10,32 +10,9 @@ public class TaskRepository : ITaskRepository
     private readonly Data.AppDbContext _db;
     public TaskRepository(Data.AppDbContext db) => _db = db;
 
-    //public async Task<(IReadOnlyList<TaskItem> Items, int Total)> ListAsync(TaskListQuery q, CancellationToken ct)
-    //{
-    //    var query = _db.Tasks.AsQueryable();
-
-    //    if (!string.IsNullOrWhiteSpace(q.Search))
-    //        query = query.Where(t => t.Title.Contains(q.Search!) || (t.Description != null && t.Description.Contains(q.Search!)));
-
-    //    query = (q.SortBy?.ToLowerInvariant()) switch
-    //    {
-    //        "title" => q.Desc ? query.OrderByDescending(t => t.Title) : query.OrderBy(t => t.Title),
-    //        "status" => q.Desc ? query.OrderByDescending(t => t.Status) : query.OrderBy(t => t.Status),
-    //        _ => q.Desc ? query.OrderByDescending(t => t.CreatedAtUtc) : query.OrderBy(t => t.CreatedAtUtc)
-    //    };
-
-    //    var total = await query.CountAsync(ct);
-    //    var items = await query.AsNoTracking()
-    //                           .Skip((q.Page - 1) * q.PageSize)
-    //                           .Take(q.PageSize)
-    //                           .ToListAsync(ct);
-
-    //    return (items, total);
-    //}
-
     public async Task<(IReadOnlyList<TaskItem> Items, int Total)> ListAsync(TaskListQuery q, CancellationToken ct)
     {
-        var query = _db.Tasks.Where(t => !t.IsDeleted).AsQueryable();
+        var query = _db.Tasks.Where(t => !t.IsDeleted).Include(x => x.AssignedUser).AsQueryable();
 
         // Search
         if (!string.IsNullOrWhiteSpace(q.Search))
@@ -47,10 +24,9 @@ public class TaskRepository : ITaskRepository
         }
 
         // AssignedTo
-        if (!string.IsNullOrWhiteSpace(q.AssignedTo))
+        if (q.AssignedUserId != null)
         {
-            var likeAss = $"%{q.AssignedTo}%";
-            query = query.Where(t => t.AssignedTo != null && EF.Functions.Like(t.AssignedTo, likeAss));
+            query = query.Where(t => t.AssignedUserId != null && t.AssignedUserId == q.AssignedUserId);
         }
 
         // Status
@@ -64,7 +40,7 @@ public class TaskRepository : ITaskRepository
         var ordered = key switch
         {
             "title" => q.Desc ? query.OrderByDescending(t => t.Title) : query.OrderBy(t => t.Title),
-            "assignedto" => q.Desc ? query.OrderByDescending(t => t.AssignedTo) : query.OrderBy(t => t.AssignedTo),
+            "assignedto" => q.Desc ? query.OrderByDescending(t => t.AssignedUserId) : query.OrderBy(t => t.AssignedUserId),
             "status" => q.Desc ? query.OrderByDescending(t => t.Status) : query.OrderBy(t => t.Status),
             "updatedatutc" => q.Desc ? query.OrderByDescending(t => t.UpdatedAtUtc) : query.OrderBy(t => t.UpdatedAtUtc),
             _ => q.Desc ? query.OrderByDescending(t => t.CreatedAtUtc) : query.OrderBy(t => t.CreatedAtUtc)

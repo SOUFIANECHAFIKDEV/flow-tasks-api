@@ -1,6 +1,5 @@
 ﻿using Flow.Tasks.Application.Abstractions;
 using Flow.Tasks.Domain.Entities;
-using Flow.Tasks.Domain.Enums;
 
 namespace Flow.Tasks.Application.Tasks;
 
@@ -15,13 +14,13 @@ public class TaskService : ITaskService
     public Task<TaskItem?> GetAsync(int id, CancellationToken ct)
         => _repo.GetAsync(id, ct);
 
-    public async Task<TaskItem> CreateAsync(string title, string? description, string? assignedTo, int Status, CancellationToken ct)
+    public async Task<TaskItem> CreateAsync(string title, string? description, int? AssignedUserId, int Status, CancellationToken ct)
     {
         var e = new TaskItem
         {
             Title = title,
             Description = description,
-            AssignedTo = assignedTo,
+            AssignedUserId = AssignedUserId,
             Status = (Domain.Enums.TaskStatus) Status,
             CreatedAtUtc = DateTime.Now
         };
